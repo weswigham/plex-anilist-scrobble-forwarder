@@ -1,7 +1,9 @@
 // @ts-check
 
 import * as process from "process";
-import parseMultipartFormData from "@anzp/azure-function-multipart";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const parseMultipartFormData = require("@anzp/azure-function-multipart").default;
 
 const ANILIST_CLIENT_ID = process.env.ANILIST_CLIENT_ID;
 const ANILIST_CLIENT_SECRET = process.env.ANILIST_CLIENT_SECRET;
