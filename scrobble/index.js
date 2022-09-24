@@ -11,7 +11,7 @@ const ANILIST_CLIENT_SECRET = process.env.ANILIST_CLIENT_SECRET;
  */
 export default async function (context, req) {
     if (req.method === "GET") {
-        if (!req.params.code) {
+        if (!req.query.code) {
             context.res = {
                 status: "200",
                 headers: {
@@ -34,7 +34,7 @@ export default async function (context, req) {
             const webhookURL = new URL(req.url);
             webhookURL.search = "";
             webhookURL.hash = "";
-            webhookURL.search = `?code=${req.params.code}`;
+            webhookURL.search = `?code=${req.query.code}`;
             context.res = {
                 status: "200",
                 headers: {
@@ -62,7 +62,7 @@ export default async function (context, req) {
             return;
         }
     }
-    else if (req.method === "POST" && req.params.code) {
+    else if (req.method === "POST" && req.query.code) {
         const redirectUri = new URL(req.url);
         redirectUri.search = "";
         redirectUri.hash = "";
@@ -77,7 +77,7 @@ export default async function (context, req) {
                 "client_id": ANILIST_CLIENT_ID,
                 "client_secret": ANILIST_CLIENT_SECRET,
                 "redirect_uri": redirectUri,
-                "code": req.params.code,
+                "code": req.query.code,
             }),
         });
         if (res.status !== 200) {
