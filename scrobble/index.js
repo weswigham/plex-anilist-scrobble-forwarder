@@ -10,6 +10,9 @@ const ANILIST_CLIENT_SECRET = process.env.ANILIST_CLIENT_SECRET;
  * @param {import("@azure/functions").HttpRequest} req
  */
 export default async function (context, req) {
+    context.log(`${req.method} ${req.url}`);
+    context.log(req.query);
+    context.log(req.params);
     if (req.method === "GET") {
         if (!req.query.code) {
             context.res = {
