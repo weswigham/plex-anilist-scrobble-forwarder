@@ -1,23 +1,10 @@
 // @ts-check
 
 import * as process from "process";
-import { isContext } from "vm";
+import parseMultipartFormData from "@anzp/azure-function-multipart";
 
 const ANILIST_CLIENT_ID = process.env.ANILIST_CLIENT_ID;
 const ANILIST_CLIENT_SECRET = process.env.ANILIST_CLIENT_SECRET;
-
-/**
- * @param {*} req 
- * @returns {object | undefined}
- */
-function tryGetJSONBody(req) {
-    try {
-        return JSON.parse(req.body.toString());
-    }
-    catch (_) {
-        return undefined;
-    }
-}
 
 /**
  * 
@@ -44,7 +31,6 @@ export default async function (context, req) {
     context.log(`${req.method} ${req.url}`);
     context.log(req.query);
     context.log(req.params);
-    context.log(req.body.toString());
     if (req.method === "GET") {
         if (!req.query.code) {
             context.res = {
@@ -98,6 +84,9 @@ export default async function (context, req) {
         }
     }
     else if (req.method === "POST" && req.query.code) {
+        const { fields, files } = await parseMultipartFormData(req);
+        context.log(fields);
+        context.log(files);
         const redirectUri = new URL(req.url);
         redirectUri.search = "";
         redirectUri.hash = "";
