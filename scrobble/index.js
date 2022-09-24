@@ -44,7 +44,7 @@ export default async function (context, req) {
     context.log(`${req.method} ${req.url}`);
     context.log(req.query);
     context.log(req.params);
-    context.log(tryGetJSONBody(req));
+    context.log(req.body.toString());
     if (req.method === "GET") {
         if (!req.query.code) {
             context.res = {
