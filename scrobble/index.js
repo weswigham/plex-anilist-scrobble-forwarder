@@ -13,6 +13,7 @@ export default async function (context, req) {
     context.log(`${req.method} ${req.url}`);
     context.log(req.query);
     context.log(req.params);
+    context.log(req.body);
     if (req.method === "GET") {
         if (!req.query.code) {
             context.res = {
@@ -84,6 +85,7 @@ export default async function (context, req) {
             }),
         });
         if (res.status !== 200) {
+            context.log(res.body);
             context.res = {
                 status: "401",
             };
