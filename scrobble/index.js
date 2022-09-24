@@ -86,39 +86,41 @@ export default async function (context, req) {
         }
     }
     else if (req.method === "POST" && req.query.code) {
-        const { fields, files } = await parseMultipartFormData(req);
-        context.log(fields);
-        context.log(files);
-        const redirectUri = new URL(req.url);
-        redirectUri.search = "";
-        redirectUri.hash = "";
-        const res = await fetchAndLogOnError(context, "https://anilist.co/api/v2/oauth/token", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-            },
-            body: JSON.stringify({
-                "grant_type": "authorization_code",
-                "client_id": ANILIST_CLIENT_ID,
-                "client_secret": ANILIST_CLIENT_SECRET,
-                "redirect_uri": redirectUri,
-                "code": req.query.code,
-            }),
-        });
-        if (res.status !== 200) {
-            context.log(await res.text());
-            context.res = {
-                status: "401",
-            };
+        const { fields } = await parseMultipartFormData(req);
+        const data = JSON.parse(fields[0].value);
+        context.log(data);
+        if (data.event === "media.scrobble") {
+            const redirectUri = new URL(req.url);
+            redirectUri.search = "";
+            redirectUri.hash = "";
+            const res = await fetchAndLogOnError(context, "https://anilist.co/api/v2/oauth/token", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                body: JSON.stringify({
+                    "grant_type": "authorization_code",
+                    "client_id": ANILIST_CLIENT_ID,
+                    "client_secret": ANILIST_CLIENT_SECRET,
+                    "redirect_uri": redirectUri,
+                    "code": req.query.code,
+                }),
+            });
+            if (res.status !== 200) {
+                context.log(await res.text());
+                context.res = {
+                    status: "401",
+                };
+                return;
+            }
+            const json = await res.json();
+            const token = json.access_token;
+            // TODO: GraphQL it up and use the `media.scrobble` event in the request to set the corresponding episode in anilist "played"
+            context.log("Successfully got anilist access token:");
+            context.log(token);
             return;
         }
-        const json = await res.json();
-        const token = json.access_token;
-        // TODO: GraphQL it up and use the `media.scrobble` event in the request to set the corresponding episode in anilist "played"
-        context.log("Successfully got anilist access token:");
-        context.log(token);
-        return;
     }
 
     context.res = {
