@@ -54,7 +54,7 @@ export default async function (context, req) {
 
         Treat this as you would your anilist password.
 
-        Paste this URL into your PLEX account"s "Webhooks" panel.
+        Paste this URL into your PLEX account's "Webhooks" panel.
     </body>
 </html>
 `
