@@ -14,13 +14,16 @@ export default async function (context, req) {
         if (!req.params.code) {
             context.res = {
                 status: "200",
+                headers: {
+                    "Content-Type": "text/html; charset=UTF-8",
+                },
                 body: `
 <html>
     <head>
         <title>Auth To Anilist</title>
     </head>
     <body>
-        <a href='https://anilist.co/api/v2/oauth/authorize?client_id=${ANILIST_CLIENT_ID}&redirect_uri=${encodeURI(req.url)}&response_type=code'>Login with AniList</a>
+        <a href="https://anilist.co/api/v2/oauth/authorize?client_id=${ANILIST_CLIENT_ID}&redirect_uri=${encodeURIComponent(req.url)}&response_type=code">Login with AniList</a>
     </body>
 </html>
 `
@@ -34,6 +37,9 @@ export default async function (context, req) {
             webhookURL.search = `?code=${req.params.code}`;
             context.res = {
                 status: "200",
+                headers: {
+                    "Content-Type": "text/html; charset=UTF-8",
+                },
                 body: `
 <html>
     <head>
@@ -48,7 +54,7 @@ export default async function (context, req) {
 
         Treat this as you would your anilist password.
 
-        Paste this URL into your PLEX account's "Webhooks" panel.
+        Paste this URL into your PLEX account"s "Webhooks" panel.
     </body>
 </html>
 `
@@ -63,15 +69,15 @@ export default async function (context, req) {
         const res =  await fetch("https://anilist.co/api/v2/oauth/token", {
             method: "POST",
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
+                "Content-Type": "application/json",
+                "Accept": "application/json",
             },
             body: JSON.stringify({
-                'grant_type': 'authorization_code',
-                'client_id': ANILIST_CLIENT_ID,
-                'client_secret': ANILIST_CLIENT_SECRET,
-                'redirect_uri': redirectUri,
-                'code': req.params.code,
+                "grant_type": "authorization_code",
+                "client_id": ANILIST_CLIENT_ID,
+                "client_secret": ANILIST_CLIENT_SECRET,
+                "redirect_uri": redirectUri,
+                "code": req.params.code,
             }),
         });
         if (res.status !== 200) {
@@ -83,10 +89,10 @@ export default async function (context, req) {
         const json = await res.json();
         const token = json.access_token;
         // TODO: GraphQL it up and use the `media.scrobble` event in the request to set the corresponding episode in anilist "played"
-        console.log("Successfully got anilist access token:");
-        console.log(token);
-        console.log("PLEX webhook request body:");
-        console.log(req.body);
+        context.log("Successfully got anilist access token:");
+        context.log(token);
+        context.log("PLEX webhook request body:");
+        context.log(req.body);
         return;
     }
 
