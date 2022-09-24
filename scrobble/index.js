@@ -1,9 +1,40 @@
 // @ts-check
 
 import * as process from "process";
+import { isContext } from "vm";
 
 const ANILIST_CLIENT_ID = process.env.ANILIST_CLIENT_ID;
 const ANILIST_CLIENT_SECRET = process.env.ANILIST_CLIENT_SECRET;
+
+/**
+ * @param {*} req 
+ * @returns {object | undefined}
+ */
+function tryGetJSONBody(req) {
+    try {
+        return JSON.parse(req.body.toString());
+    }
+    catch (_) {
+        return undefined;
+    }
+}
+
+/**
+ * 
+ * @param {import("@azure/functions").Context} context 
+ * @param {string} url 
+ * @param {Parameters<typeof fetch>[1]=} options 
+ * @returns {ReturnType<typeof fetch>}
+ */
+async function fetchAndLogOnError(context, url, options) {
+    try {
+        return await fetch(url, options);
+    }
+    catch (err) {
+        context.log(err);
+        throw err;
+    }
+}
 
 /**
  * @param {import("@azure/functions").Context} context
@@ -13,7 +44,7 @@ export default async function (context, req) {
     context.log(`${req.method} ${req.url}`);
     context.log(req.query);
     context.log(req.params);
-    context.log(req.body);
+    context.log(tryGetJSONBody(req));
     if (req.method === "GET") {
         if (!req.query.code) {
             context.res = {
@@ -70,7 +101,7 @@ export default async function (context, req) {
         const redirectUri = new URL(req.url);
         redirectUri.search = "";
         redirectUri.hash = "";
-        const res =  await fetch("https://anilist.co/api/v2/oauth/token", {
+        const res =  await fetchAndLogOnError(context, "https://anilist.co/api/v2/oauth/token", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -96,8 +127,6 @@ export default async function (context, req) {
         // TODO: GraphQL it up and use the `media.scrobble` event in the request to set the corresponding episode in anilist "played"
         context.log("Successfully got anilist access token:");
         context.log(token);
-        context.log("PLEX webhook request body:");
-        context.log(req.body);
         return;
     }
 
