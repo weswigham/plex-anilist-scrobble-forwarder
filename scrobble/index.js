@@ -101,7 +101,7 @@ export default async function (context, req) {
         const redirectUri = new URL(req.url);
         redirectUri.search = "";
         redirectUri.hash = "";
-        const res =  await fetchAndLogOnError(context, "https://anilist.co/api/v2/oauth/token", {
+        const res = await fetchAndLogOnError(context, "https://anilist.co/api/v2/oauth/token", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -116,7 +116,7 @@ export default async function (context, req) {
             }),
         });
         if (res.status !== 200) {
-            context.log(res.body);
+            context.log(await res.text());
             context.res = {
                 status: "401",
             };
