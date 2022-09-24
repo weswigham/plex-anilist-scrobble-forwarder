@@ -1,0 +1,15 @@
+{
+  "name": "plex-anilist-scrobble-forwarder",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Sets up a forward between a PLEX webhook scrobble event and anilist's API",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "author": "Wesley Wigham",
+  "license": "MIT",
+  "devDependencies": {
+    "@azure/functions": "^3.2.0"
+  }
+}
