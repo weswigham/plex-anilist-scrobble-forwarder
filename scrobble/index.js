@@ -139,7 +139,11 @@ export default async function (context, req) {
         const { fields } = await parseMultipartFormData(req);
         const data = JSON.parse(fields[0].value);
         context.log(data);
-        if (data.event === "media.scrobble") {
+        // data.user is set for requests where the scrobble is for the webhook's intended
+        // user. Events also get sent for any media on servers the user _owns_ with owner:
+        // true (and user: false if they're not the watcher).
+        if (data.event === "media.scrobble" && data.user) {
+            // The following match essentially requires using the hama agent and prefering anidb matches (tvdb matches will fail to sync)
             const anidbMatch = /com\.plexapp\.agents\.hama\:\/\/anidb-(\d+?)\//.exec(data.Metadata.guid);
             if (anidbMatch) {
                 const anidbId = Number(anidbMatch[1]);
@@ -166,6 +170,15 @@ export default async function (context, req) {
 }`, {}, req.query.token);
 
                 context.log(response);
+                // TODO: Fetch watch state from anilist to make sure it's not newer, then submit a new watch state
+
+                // BLOCKED: The auth token/code from anilist is 1159/890 characters long. This makes the URL exceed PLEX's
+                // silent webhook URL length limit of 512. See https://forums.plex.tv/t/bug-webhook-urls-are-capped-at-512-characters
+                // To work around that limitation, this function app needs to actually _store things_. Terrible, I know.
+                // That also opens up a bigger desire for proper auth, to ensure stored data doesn't inappropriately leak.
+                // Given all that, this goes from "simple afternoon 250 line script" to "massive undertaking" real quick.
+                // Maybe I'll come back to this when I have a hankering to figure out azure tables and azure managed identity...
+                // Hah.
 
                 context.res = {
                     status: "200",
